@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Builds and deploys code to running container
+
 ./gradlew clean 
 ./gradlew war
 docker-compose cp ./build/libs/easy-login.war wildfly:/opt/jboss/wildfly/standalone/deployments/

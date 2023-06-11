@@ -2,15 +2,23 @@ version: "3"
 
 services:
   wildfly:
-    image: quay.io/wildfly/wildfly:latest
+    build:
+      context: ./wildfly
     ports:
       - "19990:9990"
       - "19980:8080"
+    volumes:
+      - "./wildfly/scripts:/scripts:ro"
     entrypoint: '/bin/bash -c'
     command:
       - |
         /opt/jboss/wildfly/bin/add-user.sh admin welcome1 --silent
+        (sleep 10 && /scripts/init-ds.sh && echo "DS created") &
         /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0
+    environment:
+      POSTGRES_PASSWORD: easylogin_pass
+      POSTGRES_USER: easylogin_user
+      POSTGRES_CONNECTION: db:5432/easylogin_db
 
   db:
     image: postgres

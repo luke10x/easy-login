@@ -1,5 +1,6 @@
 package dev.luke10x.easylogin;
 
+import jakarta.annotation.Resource;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
@@ -13,6 +14,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.Set;
 
 import static jakarta.ws.rs.core.Response.Status.*;
@@ -22,6 +25,9 @@ import static jakarta.ws.rs.core.Response.Status.*;
 @Path(RegisterController.URI)
 public class RegisterController {
     public static final String URI = "register";
+
+    @Resource(lookup = "java:/jboss/PostgresqlDS")
+    private DataSource dataSource;
 
     @Inject
     private Models models;
@@ -41,7 +47,7 @@ public class RegisterController {
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.TEXT_HTML)
     @View("register.jsp")
-    public Response handleSubmit(@Valid @BeanParam RegisterForm form) {
+    public Response handleSubmit(@Valid @BeanParam RegisterForm form) throws SQLException {
         // Validation
         if (bindingResult.isFailed()) {
             Set<ParamError> errors = bindingResult.getAllErrors();
@@ -51,11 +57,28 @@ public class RegisterController {
                 models.put("error_" + paramName, message);
                 System.out.println("> ERROR: " + paramName + " = " + message);
             }
-            System.out.println("Unfortunately failed to save (Errors set)");
+            System.out.println("Unfortunately cannot save (Validation errors)");
 
             return Response
                     .status(BAD_REQUEST)
                     .build();
+        }
+
+        // Trying to insert to DB
+        final String newHandle = form.getHandle();
+        try (final Connection connection = dataSource.getConnection()) {
+            final String sql = "INSERT INTO registration (handle, secret, enabled) VALUES (?, ?, ?)";
+            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, newHandle);
+                statement.setString(2, "Secret");
+                statement.setInt(3, 1);
+
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            // Handle database error
+            System.err.println("Error saving database handle");
+            System.err.println(e);
         }
 
         // if passed, then save
