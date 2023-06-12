@@ -1,6 +1,5 @@
-package dev.luke10x.easylogin;
+package dev.luke10x.easylogin.registration;
 
-import jakarta.annotation.Resource;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
@@ -14,7 +13,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Set;
 
@@ -26,8 +24,11 @@ import static jakarta.ws.rs.core.Response.Status.*;
 public class RegisterController {
     public static final String URI = "register";
 
-    @Resource(lookup = "java:/jboss/PostgresqlDS")
-    private DataSource dataSource;
+    @Inject
+    private HandleFactory handleFactory;
+
+    @Inject
+    private RegisterService registerService;
 
     @Inject
     private Models models;
@@ -59,35 +60,27 @@ public class RegisterController {
             }
             System.out.println("Unfortunately cannot save (Validation errors)");
 
+            return Response.status(BAD_REQUEST).build();
+        }
+
+        final String desiredHandle = form.getHandle();
+        final Handle handle = handleFactory.createNewHandle(desiredHandle);
+
+        try {
+            registerService.registerNewHandle(handle);
+
             return Response
-                    .status(BAD_REQUEST)
+                    .status(SEE_OTHER)
+                    .location(java.net.URI.create(UserController.URI))
                     .build();
+        } catch (HandleAlreadyTakenException e) {
+            models.put("error_handle", e.getMessage());
+        } catch (HandleDoesNotFitDatabaseFieldException e) {
+            models.put("error_handle", "Your handle is too long");
+        } catch (UnknownDatabaseErrorSavingHandle e) {
+            models.put("error_handle", "Database error");
         }
 
-        // Trying to insert to DB
-        final String newHandle = form.getHandle();
-        try (final Connection connection = dataSource.getConnection()) {
-            final String sql = "INSERT INTO registration (handle, secret, enabled) VALUES (?, ?, ?)";
-            try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, newHandle);
-                statement.setString(2, "Secret");
-                statement.setInt(3, 1);
-
-                statement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            // Handle database error
-            System.err.println("Error saving database handle");
-            System.err.println(e);
-        }
-
-        // if passed, then save
-        System.out.println("SAVE ME: " + form.getHandle());
-
-        // After saving
-        return Response
-                .status(SEE_OTHER)
-                .location(java.net.URI.create(UserController.URI))
-                .build();
+        return Response.status(INTERNAL_SERVER_ERROR).build();
     }
 }

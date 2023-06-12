@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
+    // TODO we don't need both I am sure
     providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
-    providedRuntime 'jakarta.platform:jakarta.jakartaee-web-api:10.0.0'
 
     implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
     implementation 'org.eclipse.krazo:krazo-core:3.0.1'
@@ -23,9 +23,23 @@ dependencies {
     // cxf - for TomEE
     // jersey - for Glassfish and Payara
 
+    // For QR generation
+    implementation 'com.google.zxing:core:3.5.1'
+
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.28'
     annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    // JUnit 5 dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+
+    // Mockito dependency
+    testImplementation 'org.mockito:mockito-core:5.2.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
 }
-
-
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.deprecation = true
+    }
+}

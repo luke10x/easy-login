@@ -2,6 +2,39 @@
 
 Easy password-less logins for your web-apps.
 
+This project is originally be meant to be both practical and exploration of technology.
+
+## OpeinID Connect authentication server stub in development
+
+From practical point of view it is an OpenID Connect compatible authentication server.
+Mostly to be used in development/testing environments
+and maybe for some not mission critical production settings.
+But the main intention is to facilitate development environments, giving developers a test-authentication
+server, which they can run in their dev environment 
+allowing to develop authentication-enabled apps offline.
+While, in production this will be swapped with full-featured authentication-server solution,
+like [Keycloak](https://www.keycloak.org/). 
+
+### Exploration of Jakarta web stack
+
+Developing web applications in Java, Spring Framework is often used as a default choice.
+Yet, Jakarta EE platform has its MVC implementation provided by
+[Krazo](https://projects.eclipse.org/projects/ee4j.krazo).
+
+Given that Jakarta EE is the official standard for developing enterprise-level Java applications,
+including web applications it is necessary to explore this technology,
+and evaluate its fit for purpose, before just jumping into Spring hype-train.
+
+Also, I need some clean reference implementation of authentication server,
+for my other projects.
+
+This projects also does some exploration into TOTP,
+as it uses TOTP as its primary authentication method.
+On one hand it provides a trendy "password-less" authentication,
+yet, TOTP is primarily designed for a second factor authentication,
+and using it as one and only way to authenticate,
+may not be the best idea from security point of view.
+
 ### Development 
 
 Start wildfly with local DB:

@@ -1,4 +1,4 @@
-package dev.luke10x.easylogin;
+package dev.luke10x.easylogin.registration;
 
 
 import jakarta.mvc.binding.MvcBinding;
@@ -17,6 +17,7 @@ public class RegisterForm implements Serializable {
     @MvcBinding
     @NotNull
     @Size(min = 1, message = "Name cannot be blank")
+    @Size(max = 16, message = "Handle cannot be longer than 16")
     @FormParam("handle")
     private String handle;
 }
