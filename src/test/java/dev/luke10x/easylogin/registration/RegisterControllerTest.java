@@ -12,13 +12,13 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+//import com.gargoylesoftware.htmlunit.WebClient;
+//import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 import java.sql.SQLException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-//@ExtendWith(MockitoExtension.class)
-//class@RunWith(MockitoJUnitRunner.class)
 
 @DisplayName("Tests for Registration controller")
 class RegisterControllerTest {
@@ -26,7 +26,7 @@ class RegisterControllerTest {
     RegisterController registerController = new RegisterController();
 
     @Mock
-    private HandleFactory handleFactory;
+    private RegistrationFormMapper registrationFormMapper;
 
     @Mock
     private RegisterService registerService;
@@ -39,9 +39,7 @@ class RegisterControllerTest {
 
     @BeforeEach
     public void setUpClass() {
-//        MockitoAnnotations.initMocks(this);
         MockitoAnnotations.openMocks(this);
-
     }
 
     @Test
@@ -54,18 +52,14 @@ class RegisterControllerTest {
                 .secret("whatever")
                 .enabled(true)
                 .build();
-        when(handleFactory.createNewHandle(any())).thenReturn(createdByFactory);
+        when(registrationFormMapper.toNewHandle(any())).thenReturn(createdByFactory);
 
         doNothing().when(registerService).registerNewHandle(any());
 
-
         RegisterForm f = new RegisterForm();
         f.setHandle("my-handle");
-        try {
-            registerController.handleSubmit(f);
-        } catch (Exception ex) {
-            System.err.println("Somehow register controller failed but service execution we will still verify");
-        }
+
+        registerController.handleSubmit(f);
 
         verify(registerService).registerNewHandle(createdByFactory);
     }

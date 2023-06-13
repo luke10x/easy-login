@@ -15,6 +15,7 @@ repositories {
 dependencies {
     // TODO we don't need both I am sure
     providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+    testAnnotationProcessor 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
 
     implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
     implementation 'org.eclipse.krazo:krazo-core:3.0.1'
@@ -25,6 +26,9 @@ dependencies {
 
     // For QR generation
     implementation 'com.google.zxing:core:3.5.1'
+
+
+//    testImplementation 'net.sourceforge.htmlunit:htmlunit:2.70.0'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.28'
@@ -42,4 +46,14 @@ allprojects {
     tasks.withType(JavaCompile) {
         options.deprecation = true
     }
+}
+test.doFirst {
+    copy {
+        from 'build/resources/test/META-INF/beans.xml'
+        into 'build/classes/test/META-INF'
+    }
+}
+test {
+    useJUnitPlatform()
+    outputs.upToDateWhen { false }
 }

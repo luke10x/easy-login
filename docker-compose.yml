@@ -7,6 +7,7 @@ services:
     ports:
       - "19990:9990"
       - "19980:8080"
+      - "15005:5005"
     volumes:
       - "./wildfly/scripts:/scripts:ro"
     entrypoint: '/bin/bash -c'
@@ -14,8 +15,10 @@ services:
       - |
         /opt/jboss/wildfly/bin/add-user.sh admin welcome1 --silent
         (sleep 10 && /scripts/init-ds.sh && echo "DS created") &
+        export JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
         /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 -bmanagement 0.0.0.0
     environment:
+#      JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       POSTGRES_PASSWORD: easylogin_pass
       POSTGRES_USER: easylogin_user
       POSTGRES_CONNECTION: db:5432/easylogin_db
