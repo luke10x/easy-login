@@ -1,5 +1,6 @@
 package dev.luke10x.easylogin.registration;
 
+import dev.luke10x.easylogin.common.FlashContainer;
 import jakarta.mvc.Models;
 import jakarta.mvc.binding.BindingResult;
 import jakarta.ws.rs.core.Response;
@@ -36,6 +37,9 @@ class RegisterControllerTest  {
 
     @Mock
     private BindingResult bindingResult;
+
+    @Mock
+    private FlashContainer flashContainer;
 
     @BeforeEach
     public void setUpClass() {
@@ -80,6 +84,6 @@ class RegisterControllerTest  {
         assertEquals("REDIRECTION", response.getStatusInfo().getFamily().name());
         assertEquals("See Other", response.getStatusInfo().getReasonPhrase());
 
-        assertEquals("http://dfsdfs/fdfd", response.getHeaders().getFirst("Location"));
+        assertEquals("onboarding", response.getHeaders().getFirst("Location").toString());
     }
 }
