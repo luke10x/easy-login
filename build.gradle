@@ -12,23 +12,25 @@ repositories {
     mavenCentral()
 }
 
+// About dependency choice:
+//
+// Wildfly + Resteasy is the best stack for production and it is from Red Hat
+// - krazo-resteasy - is an extension for Wildfly
+// - krazo-cxf      - is an extension for TomEE
+// - krazo-jersey   - is an extension for Glassfish and Payara
+//
+// Even though RestEasy is used for prod, Jersey is easier to setup in test environment,
+// To use Jersey in tests full Krazo extension is not needed,
+// instead lightweight In-Memory implementation from Jersey Test Framework is used
+// it is not a real container. It call APIS directly without any communication over network.
 dependencies {
-    // TODO we don't need both I am sure
     providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
-    testAnnotationProcessor 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
-
     implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
     implementation 'org.eclipse.krazo:krazo-core:3.0.1'
     implementation 'org.eclipse.krazo:krazo-resteasy:3.0.1'
-    // resteasy - is for Wildfly
-    // cxf - for TomEE
-    // jersey - for Glassfish and Payara
 
     // For QR generation
     implementation 'com.google.zxing:core:3.5.1'
-
-
-//    testImplementation 'net.sourceforge.htmlunit:htmlunit:2.70.0'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.28'
@@ -41,19 +43,13 @@ dependencies {
     // Mockito dependency
     testImplementation 'org.mockito:mockito-core:5.2.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
+
+    // In memory JAX-RS implementation for tests
+    testImplementation 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:3.1.1'
 }
+
 allprojects {
     tasks.withType(JavaCompile) {
         options.deprecation = true
     }
-}
-test.doFirst {
-    copy {
-        from 'build/resources/test/META-INF/beans.xml'
-        into 'build/classes/test/META-INF'
-    }
-}
-test {
-    useJUnitPlatform()
-    outputs.upToDateWhen { false }
 }

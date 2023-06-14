@@ -1,5 +1,6 @@
 package dev.luke10x.easylogin.registration;
 
+import dev.luke10x.easylogin.common.FlashContainer;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
@@ -12,6 +13,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 
@@ -32,6 +35,9 @@ public class RegisterController {
 
     @Inject
     private BindingResult bindingResult;
+
+    @Inject
+    private FlashContainer flashContainer;
 
     @GET
     @UriRef("register")
@@ -60,9 +66,11 @@ public class RegisterController {
         try {
             registerService.registerNewHandle(handle);
 
+            flashContainer.setMessage("Handle allocated successfully!");
+
             return Response
                     .status(SEE_OTHER)
-                    .location(java.net.URI.create(UserController.URI))
+                    .location(java.net.URI.create("onboarding"))
                     .build();
         } catch (HandleAlreadyTakenException e) {
             model.setHandleValidationError(e.getMessage());

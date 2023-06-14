@@ -2,26 +2,26 @@ package dev.luke10x.easylogin.registration;
 
 import jakarta.mvc.Models;
 import jakarta.mvc.binding.BindingResult;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.RuntimeDelegate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-//import com.gargoylesoftware.htmlunit.WebClient;
-//import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.glassfish.jersey.internal.RuntimeDelegateImpl;
 
 import java.sql.SQLException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @DisplayName("Tests for Registration controller")
-class RegisterControllerTest {
+class RegisterControllerTest  {
+
     @InjectMocks
     RegisterController registerController = new RegisterController();
 
@@ -39,12 +39,22 @@ class RegisterControllerTest {
 
     @BeforeEach
     public void setUpClass() {
+        RuntimeDelegate.setInstance(new RuntimeDelegateImpl());
+    }
+
+    @BeforeEach
+    public void setUpMocks() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    @DisplayName("Success saving")
-    void whenValidCallsService() throws UnknownDatabaseErrorSavingHandle, HandleAlreadyTakenException, HandleDoesNotFitDatabaseFieldException, SQLException {
+    @DisplayName("after successful registration")
+    void whenValidCallsService() throws
+            UnknownDatabaseErrorSavingHandle,
+            HandleAlreadyTakenException,
+            HandleDoesNotFitDatabaseFieldException,
+            SQLException {
+        // Setup
         when(bindingResult.isFailed()).thenReturn(false);
 
         Handle createdByFactory = Handle.builder()
@@ -56,11 +66,20 @@ class RegisterControllerTest {
 
         doNothing().when(registerService).registerNewHandle(any());
 
-        RegisterForm f = new RegisterForm();
-        f.setHandle("my-handle");
+        RegisterForm form = new RegisterForm();
+        form.setHandle("my-handle");
 
-        registerController.handleSubmit(f);
+        // Act
+        Response response = registerController.handleSubmit(form);
 
-        verify(registerService).registerNewHandle(createdByFactory);
+        // Verify
+        verify(registerService, times(1))
+                .registerNewHandle(createdByFactory);
+
+        assertEquals(303, response.getStatus());
+        assertEquals("REDIRECTION", response.getStatusInfo().getFamily().name());
+        assertEquals("See Other", response.getStatusInfo().getReasonPhrase());
+
+        assertEquals("http://dfsdfs/fdfd", response.getHeaders().getFirst("Location"));
     }
 }

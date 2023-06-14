@@ -1,12 +1,13 @@
 package dev.luke10x.easylogin.registration;
 
-import dev.luke10x.easylogin.topt.TotpGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import dev.luke10x.easylogin.topt.TotpGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
