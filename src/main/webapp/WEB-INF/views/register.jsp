@@ -5,7 +5,7 @@
 <%@ page import="dev.luke10x.easylogin.registration.RegisterController" %>
 
 <t:composition>
-  <jsp:attribute name="headTitle">This is onboarding page!</jsp:attribute>
+  <jsp:attribute name="headTitle">Register your handle</jsp:attribute>
   <jsp:body>
         <p class="mb-4">
             Easy Login does not ask you to enter your email or phone number.

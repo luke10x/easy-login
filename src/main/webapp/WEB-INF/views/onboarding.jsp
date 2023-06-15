@@ -6,21 +6,8 @@
   <jsp:attribute name="headTitle">This is onboarding page!</jsp:attribute>
   <jsp:body>
 
-
-      <c:if test="${not empty flashMessage}">
-
-<div class="bg-green-100 text-green-700 px-4 py-2 rounded-md">
-  <p class="text-sm">Oops! Something went wrong. Please try again later or contact support.</p>
-                ${flashMessage}
-
-</div>
-
-
-
-
-    </c:if>
     <p class="mb-4">
-        When you finished with onboarding
+        When you finished with on-boarding
         you can go here:
     </p>
 

@@ -13,8 +13,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status.*;
 
@@ -68,15 +66,12 @@ public class RegisterController {
 
             flashContainer.setMessage("Handle allocated successfully!");
 
-            return Response
-                    .status(SEE_OTHER)
-                    .location(java.net.URI.create("onboarding"))
-                    .build();
-        } catch (HandleAlreadyTakenException e) {
-            model.setHandleValidationError(e.getMessage());
-        } catch (HandleDoesNotFitDatabaseFieldException e) {
-            model.setHandleValidationError(e.getMessage());
-        } catch (UnknownDatabaseErrorSavingHandle e) {
+            // It actually responds with 303 for Post-Redirect-Get
+            return Response.accepted("redirect:onboarding").build();
+
+        } catch (HandleAlreadyTakenException |
+                 HandleDoesNotFitDatabaseFieldException |
+                 UnknownDatabaseErrorSavingHandle e) {
             model.setHandleValidationError(e.getMessage());
         }
 

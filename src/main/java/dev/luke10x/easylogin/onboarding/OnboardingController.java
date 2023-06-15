@@ -11,9 +11,9 @@ import jakarta.mvc.*;
 @Controller
 @Path("onboarding")
 public class OnboardingController {
-
-    @Inject
-    private FlashContainer flashContainer;
+//
+//    @Inject
+//    private FlashContainer flashContainer;
 
     @Inject
     Models models;
@@ -22,7 +22,8 @@ public class OnboardingController {
     @Produces(MediaType.TEXT_HTML)
     @View("onboarding.jsp")
     public void showOnboardingInstructions() {
-        models.put("flashMessage", flashContainer.getMessage());
-        flashContainer.setMessage(null);
+//        flashContainer.setMessage("detted");
+//        models.put("flashContainer", flashContainer.getMessage());
+//        flashContainer.setMessage(null);
     }
 }

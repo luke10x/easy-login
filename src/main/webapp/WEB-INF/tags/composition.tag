@@ -1,4 +1,6 @@
 <%@tag description="Overall Page template" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+
 <%@attribute name="headTitle" fragment="true" %>
 <%@attribute name="header" fragment="true" %>
 <%@attribute name="footer" fragment="true" %>
@@ -36,7 +38,16 @@
          <jsp:invoke fragment="headTitle"/>
       </h1>
     </div>
+
     <div class="max-w-md mx-auto bg-white p-8 border border-gray-300 shadow-sm">
+
+      <c:if test="${not empty flashContainer.message}">
+        <div class="bg-green-100 text-green-700 px-4 py-2 rounded-md">
+          <p class="text-sm">Success:</p>
+          ${flashContainer.message}
+        </div>
+      </c:if>
+
       <jsp:doBody/>
     </div>
     <div>
