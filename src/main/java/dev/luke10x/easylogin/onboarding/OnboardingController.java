@@ -20,7 +20,7 @@ public class OnboardingController {
 
     @GET
     @Produces(MediaType.TEXT_HTML)
-    @View("onboarding.jsp")
+    @View("onboarding.xhtml")
     public void showOnboardingInstructions() {
 //        flashContainer.setMessage("detted");
 //        models.put("flashContainer", flashContainer.getMessage());

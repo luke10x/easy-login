@@ -40,7 +40,7 @@ public class RegisterController {
     @GET
     @UriRef("register")
     @Produces(MediaType.TEXT_HTML)
-    @View("register.jsp")
+    @View("register.xhtml")
     public void register() {
         System.out.println("dev.luke10x.easylogin.Register controller visited");
     }
@@ -48,7 +48,7 @@ public class RegisterController {
     @POST
     @Consumes("application/x-www-form-urlencoded")
     @Produces(MediaType.TEXT_HTML)
-    @View("register.jsp")
+    @View("register.xhtml")
     public Response handleSubmit(@Valid @BeanParam RegisterForm registrationForm) throws SQLException {
         // Validation
         if (bindingResult.isFailed()) {

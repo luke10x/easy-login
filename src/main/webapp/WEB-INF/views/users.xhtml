@@ -1,0 +1,20 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/components/layout.xhtml">
+  <ui:define name="headTitle">User list</ui:define>
+  <ui:define name="content">
+    <p class="mb-4">
+        People who already registered their handles in this system:
+    </p>
+
+    <ui:fragment rendered="#{not empty users}">
+      <ul>
+        <ui:repeat var="user" begin="0" value="${users}">
+        <li>${user.name}</li>
+        </ui:repeat>
+      </ul>
+    </ui:fragment>
+
+    We have enough users, but <a href="${mvc.uri('register')}">Register another</a>
+  </ui:define>
+</ui:composition>

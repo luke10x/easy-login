@@ -31,6 +31,6 @@ public class UserController {
         models.put("users", users);
 
         System.out.println("users set" +  users.toString());
-        return "users.jsp";
+        return "users.xhtml";
     }
 }

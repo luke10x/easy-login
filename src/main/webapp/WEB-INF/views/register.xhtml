@@ -1,0 +1,38 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/components/layout.xhtml">
+  <ui:define name="headTitle">Register your handle</ui:define>
+  <ui:define name="content">
+    <p class="mb-4">
+      Easy Login does not ask you to enter your email or phone number.
+      It does not even need you to choose a password.
+      All you need to do is to choose a handle (login name) to experience
+      quick and secure authentication!
+    </p>
+
+    <form method="POST" action="${mvc.uri('register')}">
+      <div class="mb-4">
+        <label for="handle" class="block text-gray-700">
+          Enter handle (user name) which you will use for your password-less login
+        </label>
+        <input type="text" id="handle" name="handle" class="form-input border py-2 px-1 mt-1 block w-full" required="required" />
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600">Register</button>
+      </div>
+    </form>
+
+    <ui:fragment rendered="#{not empty registrationModel.handleValidationError}">
+      <div class="mt-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong class="font-bold">Error:</strong>
+          <span class="block sm:inline">${registrationModel.handleValidationError}</span>
+        </div>
+      </div>
+    </ui:fragment>
+
+    (List of already registered people is here: <a href="${mvc.uri('user-list')}">users list</a>)
+  </ui:define>
+</ui:composition>
+

@@ -1,0 +1,13 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/components/layout.xhtml">
+  <ui:define name="headTitle"> This is onboarding page!</ui:define>
+  <ui:define name="content">
+    <p class="mb-4">
+      When you finished with on-boarding
+      you can go here:
+    </p>
+
+    <a class="text-blue-500 hover:text-blue-700 underline" href="${mvc.uri('user-list')}">users list</a>
+  </ui:define>
+</ui:composition>
