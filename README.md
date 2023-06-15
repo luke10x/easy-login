@@ -57,8 +57,21 @@ Development web UI accessible:
 - [WildFly dashboard](http://0.0.0.0:19990/)
 - [Easy Login dashboard](http://0.0.0.0:19980/)
 
+### Issues and Workarounds
+
+I have resolves some issues with the platform, and some of them are just common pitfalls,
+but some are strange and not well known behaviours.
+
+- JSF does not seem to work with the "latest" tag of [Wildfly image](https://quay.io/repository/wildfly/wildfly).
+  Using "27.0.1.Final-jdk17" works.lk
+- Must use `Response.accepted("redirect:onboarding").build()` syntax for redirects
+  if @RedirectScope is used. Using long syntax of the Response builder with 2XX codes does not seem to follow
+  Location header; and using 3XX code redirects but cannot access object ser to @RedirectScope before redirection.
+
 ### Resources
+
 - [Jakarta MVC Spec](https://jakarta.ee/specifications/mvc/2.0/jakarta-mvc-spec-2.0.html#redirect)
 - [Jakarta & Krazo @ Mastertheboss](https://www.mastertheboss.com/java-ee/jakarta-ee/jakarta-mvc-made-simple/)
 - [Jakarta & Krazo @ Baeldung](https://www.baeldung.com/java-ee-mvc-eclipse-krazo)
 - [Another example by Hantsy](https://github.com/hantsy/jakartaee-mvc-sample/blob/master/pom.xml)
+- [Getting started with JSF](https://www.mastertheboss.com/java-ee/jsf/getting-started-with-jsf-4-0-on-wildfly-27/)
