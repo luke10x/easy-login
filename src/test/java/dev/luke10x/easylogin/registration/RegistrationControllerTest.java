@@ -7,8 +7,8 @@ import dev.luke10x.easylogin.community.UserController;
 import dev.luke10x.easylogin.community.UserService;
 import dev.luke10x.easylogin.topt.TotpGenerator;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.*;
+import jakarta.ws.rs.core.Form;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -25,16 +25,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import jakarta.ws.rs.client.Client;
 import org.mockito.Mockito;
 
 import javax.enterprise.inject.Default;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
 import static jakarta.ws.rs.core.MediaType.TEXT_HTML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(ArquillianExtension.class)
@@ -128,5 +131,38 @@ public class RegistrationControllerTest {
         }
     }
 
+    @Test
+    public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, MalformedURLException {
+        RegistrationService registrationService = Mockito.mock(RegistrationService.class);
 
+        final String url = new URL(baseUrl, "mvc/register").toExternalForm();
+        final WebTarget target = client.target(url);
+
+        var form = new Form();
+        form.param("handle", null);
+        final Response response = target.request().accept(TEXT_HTML).post(Entity.form(form));
+
+        assertEquals(400, response.getStatus());
+        verify(registrationService, times(0)).registerNewHandle(any());
+    }
+
+    @Test
+    public void validHandleSavedUsingService() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, MalformedURLException {
+        RegistrationService registrationService = Mockito.mock(RegistrationService.class);
+
+        client.register((ClientRequestFilter) requestContext -> {
+            requestContext.setProperty("http.protocol.handle-redirects", false);
+        });
+
+        final String url = new URL(baseUrl, "mvc/register").toExternalForm();
+        final WebTarget target = client.target(url);
+
+        var form = new Form();
+        form.param("handle", "normal_handle");
+
+        final Response response = target.request().post(Entity.form(form));
+
+        assertEquals(404, response.getStatus());
+        verify(registrationService, times(1)).registerNewHandle(any());
+    }
 }

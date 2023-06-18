@@ -22,6 +22,7 @@ allprojects {
 configurations {
     wildFlyDistribution
 }
+
 dependencies {
     providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
     implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
@@ -43,17 +44,54 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.2.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
 
-    // For Arquillian
-    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-maven-plugin:3.1.4'
+    // For CDI tests
+    testImplementation 'de.hilling.junit.cdi:cdi-test-core:4.3.0'
+    testImplementation 'de.hilling.junit.cdi:cdi-test-jee:4.3.0'
+    testImplementation 'de.hilling.junit.cdi:cdi-test-microprofile:4.3.0'
 
-    // Generic Arquillian dependencies
+
+    // For Weld junit5:
+    implementation 'org.jboss.weld:weld-junit5:4.0.0.Final'
+
+    // For Arquillian
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-maven-plugin:3.1.4' // Replace with the desired ShrinkWrap version
+
+
+    // In memory JAX-RS implementation for tests
+    testImplementation 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:3.1.1'
+    testImplementation 'org.glassfish.jersey.test-framework:jersey-test-framework-core:3.1.1'
+
+    testImplementation('org.glassfish.jersey.inject:jersey-hk2:3.1.1') {
+        exclude group: 'org.glassfish.hk2.external', module: 'javax.inject'
+    }
+
+    implementation 'org.glassfish.jersey.ext:jersey-bean-validation:3.1.1'
+    implementation 'org.jboss.resteasy:resteasy-jaxrs:3.15.6.Final'
+
+    implementation 'org.jboss.resteasy:jaxrs-api:3.0.12.Final'
+    implementation 'org.jboss.resteasy:resteasy-jaxb-provider:6.2.3.Final'
+    implementation 'org.jboss.resteasy:resteasy-jackson2-provider:6.2.3.Final'
+
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-gradle-embedded-archive:3.1.4'
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven-embedded:3.1.4'
+//
+    implementation 'org.glassfish.jersey.media:jersey-media-multipart:3.1.1'
+
+    testImplementation 'org.jboss.resteasy:resteasy-jackson2-provider:6.2.4.Final'
+
+    implementation 'org.codehaus.jackson:jackson-mapper-asl:1.9.13'
+
+
+    // Generic Arquillian
     implementation platform('org.jboss.arquillian:arquillian-bom:1.7.0.Final')
+    testImplementation 'org.wildfly.arquillian:wildfly-arquillian-container-managed:5.0.0.Final'
+
     testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container'
     testImplementation 'org.jboss.arquillian.protocol:arquillian-protocol-servlet-jakarta'
     testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-gradle-embedded-archive:3.1.4'
     testImplementation 'org.gradle:gradle-tooling-api:7.3-20210825160000+0000'
 
-    // Just Wildfly distribution special scope
+    // Just Wildfly
     wildFlyDistribution 'org.wildfly:wildfly-dist:27.0.1.Final@zip'
 }
 
@@ -66,8 +104,16 @@ task setupWildFly(type: Copy) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// Penalty for using gradle:
-// Aquillian needs this pom to create shrinkwrap archive
+test {
+    dependsOn setupWildFly
+    systemProperty 'arquillian.launch', 'wildfly-managed'
+    systemProperty 'serverConfig', 'standalone-full.xml'
+//    systemProperty 'jboss.home', file("${buildDir}/wildfly-27.0.1").path
+//    environment 'JBOSS_HOME', file("${buildDir}/wildfly-27.0.1").path
+//    environment 'WILDFLY_HOME', file("${buildDir}/wildfly-27.0.1").path
+}
+
+// Arquillian needs this pom to create shrinkwrap archive
 publishing {
     publications {
         sample(MavenPublication) {
@@ -84,14 +130,4 @@ task writeNewPom {
     dependsOn 'generatePomFileForSamplePublication'
     doLast {
     }
-}
-
-test {
-    dependsOn setupWildFly
-    dependsOn writeNewPom
-    systemProperty 'arquillian.launch', 'wildfly-managed'
-    systemProperty 'serverConfig', 'standalone-full.xml'
-//    systemProperty 'jboss.home', file("${buildDir}/wildfly-27.0.1").path
-//    environment 'JBOSS_HOME', file("${buildDir}/wildfly-27.0.1").path
-//    environment 'WILDFLY_HOME', file("${buildDir}/wildfly-27.0.1").path
 }
