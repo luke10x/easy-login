@@ -42,10 +42,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
-    static{
-        System.setProperty("jboss.home", "build/wildfly-27.0.1/wildfly-27.0.1.Final");
-    }
-
     @Default
     public static class RegistrationServiceAlternative implements RegistrationService {
         @Override

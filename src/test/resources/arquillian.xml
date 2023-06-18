@@ -4,13 +4,18 @@
     <!--    <defaultProtocol type="Servlet 5.0"/>-->
 
     <engine>
-        <property name="deploymentExportPath">target/</property>
+        <property name="deploymentExportPath">build/arquillian-wars/</property>
     </engine>
 
     <!-- Configuration to be used when the WildFly managed profile is active -->
     <container qualifier="wildfly-managed">
         <configuration>
             <property name="serverConfig">standalone-full.xml</property>
+
+            <property name="jboss.home">build/wildfly-27.0.1/wildfly-27.0.1.Final</property>
+<!--            <property name="javaVmArguments">-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:15006</property>-->
+<!--            <property name="javaVmArguments">-agentlib:jdwp=transport=dt_socket,server=n,address=lukes-mbp.lan:15006,suspend=y,onuncaught=n</property>-->
+
         </configuration>
     </container>
 
