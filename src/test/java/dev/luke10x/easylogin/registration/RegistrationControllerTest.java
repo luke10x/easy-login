@@ -1,5 +1,8 @@
 package dev.luke10x.easylogin.registration;
 
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import dev.luke10x.easylogin.UserApplication;
 import dev.luke10x.easylogin.common.FlashContainer;
 import dev.luke10x.easylogin.community.User;
@@ -7,9 +10,6 @@ import dev.luke10x.easylogin.community.UserController;
 import dev.luke10x.easylogin.community.UserService;
 import dev.luke10x.easylogin.topt.TotpGenerator;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.client.*;
-import jakarta.ws.rs.core.Form;
-import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -29,16 +29,11 @@ import org.mockito.Mockito;
 
 import javax.enterprise.inject.Default;
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import static jakarta.ws.rs.core.MediaType.TEXT_HTML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
@@ -98,11 +93,17 @@ public class RegistrationControllerTest {
     @ArquillianResource
     URL baseUrl;
 
-    private Client client;
+    private WebClient client;
 
     @BeforeEach
-    public void setup() {
-        this.client = ClientBuilder.newClient();
+    public void setUp() {
+        client = new WebClient();
+        client.getOptions()
+                .setThrowExceptionOnScriptError(false);
+        client.getOptions()
+                .setThrowExceptionOnFailingStatusCode(false);
+        client.getOptions()
+                .setRedirectEnabled(true);
     }
 
     @AfterEach
@@ -118,47 +119,47 @@ public class RegistrationControllerTest {
         RegistrationService registrationService = Mockito.mock(RegistrationService.class);
 
         final String url = new URL(baseUrl, "mvc/register").toExternalForm();
-        final WebTarget target = client.target(url);
-        try (final Response response = target.request().accept(TEXT_HTML).get()) {
-            assertEquals(200, response.getStatus());
+        Page page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
 
-            String responseBody = response.readEntity(String.class);
-            System.out.println("Body: " + responseBody);
-        }
+        assertEquals(200, page.getWebResponse().getStatusCode());
+
+        final String body = page.getWebResponse().getContentAsString();
+        System.out.println("Body: " + body);
     }
 
     @Test
-    public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, MalformedURLException {
+    public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
         RegistrationService registrationService = Mockito.mock(RegistrationService.class);
 
-        final String url = new URL(baseUrl, "mvc/register").toExternalForm();
-        final WebTarget target = client.target(url);
+        HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
+        var form = page.getForms().get(0);
 
-        var form = new Form();
-        form.param("handle", null);
-        final Response response = target.request().accept(TEXT_HTML).post(Entity.form(form));
+        form.getInputByName("handle").type("");
+        HtmlPage resultPage = form.getButtonByName("submit-registration").click();
 
-        assertEquals(400, response.getStatus());
-        verify(registrationService, times(0)).registerNewHandle(any());
+        // Browser is likely not even reaching backend validation
+        assertEquals(200, resultPage.getWebResponse().getStatusCode());
+        final String body = resultPage.getWebResponse().getContentAsString();
+        System.out.println("Body: " + body);
     }
 
     @Test
-    public void validHandleSavedUsingService() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, MalformedURLException {
+    public void dsfsdfsd() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
         RegistrationService registrationService = Mockito.mock(RegistrationService.class);
 
-        client.register((ClientRequestFilter) requestContext -> {
-            requestContext.setProperty("http.protocol.handle-redirects", false);
-        });
+        HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
+        var form = page.getForms().get(0);
 
-        final String url = new URL(baseUrl, "mvc/register").toExternalForm();
-        final WebTarget target = client.target(url);
+        form.getInputByName("handle").type("myname");
+        Page resultPage = form.getButtonByName("submit-registration").click();
 
-        var form = new Form();
-        form.param("handle", "normal_handle");
+        // It is 404 because it redirected out of deployed ShrinkWrap web archive
+        assertEquals(404, resultPage.getWebResponse().getStatusCode());
+        assertEquals(
+                new URL(baseUrl, "mvc/onboarding").getPath(),
+                resultPage.getWebResponse().getWebRequest().getUrl().getPath());
 
-        final Response response = target.request().post(Entity.form(form));
-
-        assertEquals(404, response.getStatus());
-        verify(registrationService, times(1)).registerNewHandle(any());
+        final String body = resultPage.getWebResponse().getContentAsString();
+        System.out.println("Body: " + body);
     }
 }

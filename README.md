@@ -57,6 +57,11 @@ Development web UI accessible:
 - [WildFly dashboard](http://0.0.0.0:19990/)
 - [Easy Login dashboard](http://0.0.0.0:19980/)
 
+# IntelliJ
+
+To run tests using green triangle is better to configure Junit template in Run configurations.
+
+
 ### Issues and Workarounds
 
 I have resolves some issues with the platform, and some of them are just common pitfalls,
