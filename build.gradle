@@ -48,26 +48,14 @@ dependencies {
     implementation platform('org.jboss.arquillian:arquillian-bom:1.7.0.Final')
     testImplementation 'org.wildfly.arquillian:wildfly-arquillian-container-managed:5.0.0.Final'
     testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container'
-    testImplementation 'org.jboss.arquillian.protocol:arquillian-protocol-servlet-jakarta'
 
     // POM files internally used to create the web archive for Arquillian
     testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-maven-plugin:3.1.4'
 
-//    implementation 'org.jboss.resteasy:resteasy-client:6.2.3.Final'
-//    implementation 'org.jboss.resteasy:resteasy-jackson2-provider:6.2.3.Final'
-//    testImplementation 'org.javassist:javassist:3.29.2-GA'
+    // Drives MVC tests
     testImplementation 'net.sourceforge.htmlunit:htmlunit:2.70.0'
 
-//    testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-core'
-//    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:3.1.4'
-
-    // TODO replace these 2 dependencies with something consistent in this project
-    testImplementation 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:3.1.1'
-    testImplementation('org.glassfish.jersey.inject:jersey-hk2:3.1.1') {
-        exclude group: 'org.glassfish.hk2.external', module: 'javax.inject'
-    }
-
-    // Just Wildfly, for Arquillian
+    // Just Wildfly distribution, for Arquillian
     wildFlyDistribution 'org.wildfly:wildfly-dist:27.0.1.Final@zip'
 }
 
@@ -86,8 +74,8 @@ publishing {
         sample(MavenPublication) {
             from components.java
 
-            groupId 'org.example'
-            artifactId 'test'
+            groupId 'dev.luke10x'
+            artifactId 'shrinkwrap-for-arquillian'
             version '1.0.0'
         }
     }
@@ -108,7 +96,6 @@ test {
     systemProperty 'arquillian.launch', 'wildfly-managed'
     systemProperty 'serverConfig', 'standalone-full.xml'
     systemProperty 'jboss.home', "${buildDir}/wildfly-27.0.1/wildfly-27.0.1.Final"
-    systemProperty 'jboss.home', "build/wildfly-27.0.1/wildfly-27.0.1.Final"
 
     // Configure test logging options
     testLogging {
@@ -117,5 +104,3 @@ test {
         showStackTraces = false
     }
 }
-
-
