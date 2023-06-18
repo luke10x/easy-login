@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'war'
+    id 'maven-publish' // pom will be generated for this build for Arquillian
 }
 
 compileJava {
@@ -12,17 +13,15 @@ repositories {
     mavenCentral()
 }
 
-// About dependency choice:
-//
-// Wildfly + Resteasy is the best stack for production and it is from Red Hat
-// - krazo-resteasy - is an extension for Wildfly
-// - krazo-cxf      - is an extension for TomEE
-// - krazo-jersey   - is an extension for Glassfish and Payara
-//
-// Even though RestEasy is used for prod, Jersey is easier to setup in test environment,
-// To use Jersey in tests full Krazo extension is not needed,
-// instead lightweight In-Memory implementation from Jersey Test Framework is used
-// it is not a real container. It call APIS directly without any communication over network.
+allprojects {
+    tasks.withType(JavaCompile) {
+        options.deprecation = true
+    }
+}
+
+configurations {
+    wildFlyDistribution
+}
 dependencies {
     providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
     implementation 'jakarta.mvc:jakarta.mvc-api:2.1.0'
@@ -44,12 +43,55 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.2.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.3.1'
 
-    // In memory JAX-RS implementation for tests
-    testImplementation 'org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-inmemory:3.1.1'
+    // For Arquillian
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-maven-plugin:3.1.4'
+
+    // Generic Arquillian dependencies
+    implementation platform('org.jboss.arquillian:arquillian-bom:1.7.0.Final')
+    testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container'
+    testImplementation 'org.jboss.arquillian.protocol:arquillian-protocol-servlet-jakarta'
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-gradle-embedded-archive:3.1.4'
+    testImplementation 'org.gradle:gradle-tooling-api:7.3-20210825160000+0000'
+
+    // Just Wildfly distribution special scope
+    wildFlyDistribution 'org.wildfly:wildfly-dist:27.0.1.Final@zip'
 }
 
-allprojects {
-    tasks.withType(JavaCompile) {
-        options.deprecation = true
+
+task setupWildFly(type: Copy) {
+    from configurations.wildFlyDistribution.resolvedConfiguration.files.collect { file ->
+        zipTree(file)
     }
+    into "${buildDir}/wildfly-27.0.1"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Penalty for using gradle:
+// Aquillian needs this pom to create shrinkwrap archive
+publishing {
+    publications {
+        sample(MavenPublication) {
+            from components.java
+
+            groupId 'org.example'
+            artifactId 'test'
+            version '1.0.0'
+        }
+    }
+}
+
+task writeNewPom {
+    dependsOn 'generatePomFileForSamplePublication'
+    doLast {
+    }
+}
+
+test {
+    dependsOn setupWildFly
+    dependsOn writeNewPom
+    systemProperty 'arquillian.launch', 'wildfly-managed'
+    systemProperty 'serverConfig', 'standalone-full.xml'
+//    systemProperty 'jboss.home', file("${buildDir}/wildfly-27.0.1").path
+//    environment 'JBOSS_HOME', file("${buildDir}/wildfly-27.0.1").path
+//    environment 'WILDFLY_HOME', file("${buildDir}/wildfly-27.0.1").path
 }

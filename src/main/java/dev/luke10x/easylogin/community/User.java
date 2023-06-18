@@ -1,4 +1,4 @@
-package dev.luke10x.easylogin.registration;
+package dev.luke10x.easylogin.community;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Value;

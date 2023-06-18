@@ -1,4 +1,4 @@
-package dev.luke10x.easylogin.registration;
+package dev.luke10x.easylogin.community;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;

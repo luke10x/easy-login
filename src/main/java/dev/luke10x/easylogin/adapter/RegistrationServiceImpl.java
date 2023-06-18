@@ -1,5 +1,6 @@
-package dev.luke10x.easylogin.registration;
+package dev.luke10x.easylogin.adapter;
 
+import dev.luke10x.easylogin.registration.*;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -9,14 +10,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @ApplicationScoped
-public class RegisterService {
+public class RegistrationServiceImpl implements RegistrationService {
 
     @Resource(lookup = "java:/jboss/PostgresqlDS")
     private DataSource dataSource;
 
     public void registerNewHandle(final Handle handle) throws
             HandleAlreadyTakenException,
-            HandleDoesNotFitDatabaseFieldException, UnknownDatabaseErrorSavingHandle {
+            HandleSizeException, HandleStorageException {
         try (final Connection connection = dataSource.getConnection()) {
             final String sql = "INSERT INTO registration (handle, secret, enabled) VALUES (?, ?, ?)";
             try (final PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -31,9 +32,9 @@ public class RegisterService {
             if (sqlState.startsWith("23505")) {
                 throw new HandleAlreadyTakenException("Handle @" + handle.getHandle() + " is taken already");
             } else if (sqlState.startsWith("22001")) {
-                throw new HandleDoesNotFitDatabaseFieldException("Cannot insert to DB, too much data");
+                throw new HandleSizeException("Cannot insert to DB, too much data");
             }
-            throw new UnknownDatabaseErrorSavingHandle(e.getMessage());
+            throw new HandleStorageException(e.getMessage());
         }
     }
 }

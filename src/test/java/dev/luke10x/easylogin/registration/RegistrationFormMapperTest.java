@@ -32,7 +32,7 @@ class RegistrationFormMapperTest {
     public void mapperMaps() {
         when(totpGenerator.generateSecret()).thenReturn("RaNdOMlY GeNeRaTeD");
 
-        final RegisterForm registrationForm = new RegisterForm();
+        final RegistrationForm registrationForm = new RegistrationForm();
         registrationForm.setHandle("Inputted handle");
 
         final Handle handle = registrationFormMapper.toNewHandle(registrationForm);

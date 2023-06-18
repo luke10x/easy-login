@@ -18,15 +18,15 @@ import static jakarta.ws.rs.core.Response.Status.*;
 
 @RequestScoped
 @Controller
-@Path(RegisterController.URI)
-public class RegisterController {
+@Path(RegistrationController.URI)
+public class RegistrationController {
     public static final String URI = "register";
 
     @Inject
     private RegistrationFormMapper registrationFormMapper;
 
     @Inject
-    private RegisterService registerService;
+    private RegistrationService registrationService;
 
     @Inject
     private RegistrationModel model;
@@ -46,10 +46,10 @@ public class RegisterController {
     }
 
     @POST
-    @Consumes("application/x-www-form-urlencoded")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_HTML)
     @View("register.xhtml")
-    public Response handleSubmit(@Valid @BeanParam RegisterForm registrationForm) throws SQLException {
+    public Response handleSubmit(@Valid @BeanParam RegistrationForm registrationForm) throws SQLException {
         // Validation
         if (bindingResult.isFailed()) {
             bindingResult.getAllErrors().stream().findFirst().ifPresentOrElse(
@@ -62,7 +62,7 @@ public class RegisterController {
         final Handle handle = registrationFormMapper.toNewHandle(registrationForm);
 
         try {
-            registerService.registerNewHandle(handle);
+            registrationService.registerNewHandle(handle);
 
             flashContainer.setMessage("Handle allocated successfully!");
 
@@ -70,8 +70,8 @@ public class RegisterController {
             return Response.accepted("redirect:onboarding").build();
 
         } catch (HandleAlreadyTakenException |
-                 HandleDoesNotFitDatabaseFieldException |
-                 UnknownDatabaseErrorSavingHandle e) {
+                 HandleSizeException |
+                 HandleStorageException e) {
             model.setHandleValidationError(e.getMessage());
         }
 

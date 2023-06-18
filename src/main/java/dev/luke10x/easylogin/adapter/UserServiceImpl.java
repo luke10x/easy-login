@@ -1,15 +1,18 @@
-package dev.luke10x.easylogin.registration;
+package dev.luke10x.easylogin.adapter;
 
+import dev.luke10x.easylogin.community.User;
+import dev.luke10x.easylogin.community.UserService;
 import jakarta.annotation.Resource;
-import jakarta.enterprise.context.ApplicationScoped;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-@ApplicationScoped
-public class UserService {
+public class UserServiceImpl implements UserService {
 
     @Resource(lookup = "java:/jboss/PostgresqlDS")
     private DataSource dataSource;

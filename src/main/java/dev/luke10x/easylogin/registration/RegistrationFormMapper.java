@@ -9,7 +9,7 @@ public class RegistrationFormMapper {
     @Inject
     private TotpGenerator totpGenerator;
 
-    public Handle toNewHandle(RegisterForm form) {
+    public Handle toNewHandle(RegistrationForm form) {
         return Handle.builder()
                 .handle(form.getHandle())
                 .secret(totpGenerator.generateSecret())
