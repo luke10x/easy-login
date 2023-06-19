@@ -7,13 +7,20 @@
         <property name="deploymentExportPath">build/arquillian-wars/</property>
     </engine>
 
-    <!-- Configuration to be used when the WildFly managed profile is active -->
+    <!-- Default profile has debugging enabled -->
     <container qualifier="wildfly-managed" default="true">
         <configuration>
             <property name="serverConfig">standalone-full.xml</property>
             <property name="jboss.home">build/wildfly-27.0.1/wildfly-27.0.1.Final</property>
             <property name="javaVmArguments">-agentlib:jdwp=transport=dt_socket,server=n,address=lukes-mbp.lan:15007,suspend=y,onuncaught=n</property>
+        </configuration>
+    </container>
 
+    <!-- For gradle task -->
+    <container qualifier="wildfly-managed-no-debug">
+        <configuration>
+            <property name="serverConfig">standalone-full.xml</property>
+            <property name="jboss.home">build/wildfly-27.0.1/wildfly-27.0.1.Final</property>
         </configuration>
     </container>
 

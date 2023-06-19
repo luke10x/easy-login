@@ -94,7 +94,6 @@ public class RegistrationControllerTest {
         opts.setJavaScriptEnabled(false);
     }
 
-
     @BeforeEach
     public void resetMocks() {
         Mockito.reset(registrationService.getMock());

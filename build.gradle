@@ -41,6 +41,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 
+    // For gradle
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.2'
+
     // Mockito dependency
     testImplementation 'org.mockito:mockito-core:4.4.0' // Wow, that was a bit of "fun" to figure out a working version
     testImplementation 'org.mockito:mockito-junit-jupiter:3.3.3'
@@ -48,7 +51,7 @@ dependencies {
     // Generic Arquillian
 //    implementation platform('org.jboss.arquillian:arquillian-bom:1.7.0.Final')
     testImplementation 'org.wildfly.arquillian:wildfly-arquillian-container-managed:5.0.0.Final'
-    testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container:1.7.0.Final'
+    testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container:1.7.0.Alpha14'
 
     // POM files internally used to create the web archive for Arquillian
     testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-maven-plugin:3.1.4'
@@ -109,13 +112,13 @@ task writeNewPom {
 test {
     dependsOn setupWildFly
     dependsOn writeNewPom
+    forkEvery = 1
 
-    useJUnitPlatform()
-
-    systemProperty 'arquillian.launch', 'wildfly-managed'
+    systemProperty 'arquillian.launch', 'wildfly-managed-no-debug'
     systemProperty 'serverConfig', 'standalone-full.xml'
 //    systemProperty 'jboss.home', "${buildDir}/wildfly-27.0.1/wildfly-27.0.1.Final"
     systemProperty 'jboss.home', "build/wildfly-27.0.1/wildfly-27.0.1.Final"
+    useJUnitPlatform()
 
     // Configure test logging options
     testLogging {

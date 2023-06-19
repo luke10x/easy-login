@@ -85,19 +85,11 @@ but some are strange and not well known behaviours.
 - Must use `Response.accepted("redirect:onboarding").build()` syntax for redirects
   if @RedirectScope is used. Using long syntax of the Response builder with 2XX codes does not seem to follow
   Location header; and using 3XX code redirects but cannot access object ser to @RedirectScope before redirection.
-- If @Deployment(testable = false), then the during the test it stops on breakpoints set in main code using remote
-  debug configuration on the container (On breakpoints in test code is possible to break using local debug for junit 
-  run). But this mode makes it impossible to use Mockito mocks.
-- If @Deployment(testable = true) it is possible to use Mockito mocks as the tests run in the container using this
-  mode, but for some reason it does not seem to stop on breakpoints while debugging.
-- As kind of separate issue, the tests cannot start if IDE debugger is not listening.
-- Does not look like tests run in Testable Deployments at all that can be todo with missing Junit dependencies 
-  in the shrinkwrap archive of the web container.
-  Sometimes to spot errors like that is easy as Test result is successful(!), but in reality no test has run. 
+- For mocking to work `@Deployment(testable = true)` is required. But it is troublesome still to get it working 
+  with Mockito. For now Mockito version is pointing to v4.4.0, as there is not other known good configuration.
+- Sometimes tests are not executed but build shows successful(!), but in reality no test has run. 
   `07:29:07,646 INFO  [org.jboss.weld.Bootstrap] (Weld Thread Pool -- 2) WELD-000119: Not generating any bean definitions from dev.luke10x.easylogin.registration.RegistrationControllerTest because of underlying class loading error: Type com.gargoylesoftware.htmlunit.WebClient from [Module "deployment.44fde11d-8f41-4669-8169-32e44babfa56.war" from Service Module Loader] not found.  If this is unexpected, enable DEBUG logging to see the full error.`
   I think that in this case it should treat the failure as critical and fail the test.
-- Found Mockito configuration that works. Unfortunately that is an old version. With this version now
-  MockitoAnnotations.openMocks does not work...
 
 
 ### Resources
