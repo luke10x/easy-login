@@ -4,7 +4,8 @@ Easy password-less logins for your web-apps.
 
 This project is originally be meant to be both practical and exploration of technology.
 
-## OpeinID Connect authentication server stub in development
+
+## OpenID Connect authentication server stub in development
 
 From practical point of view it is an OpenID Connect compatible authentication server.
 Mostly to be used in development/testing environments
@@ -14,6 +15,7 @@ server, which they can run in their dev environment
 allowing to develop authentication-enabled apps offline.
 While, in production this will be swapped with full-featured authentication-server solution,
 like [Keycloak](https://www.keycloak.org/). 
+
 
 ### Exploration of Jakarta web stack
 
@@ -89,6 +91,14 @@ but some are strange and not well known behaviours.
 - If @Deployment(testable = true) it is possible to use Mockito mocks as the tests run in the container using this
   mode, but for some reason it does not seem to stop on breakpoints while debugging.
 - As kind of separate issue, the tests cannot start if IDE debugger is not listening.
+- Does not look like tests run in Testable Deployments at all that can be todo with missing Junit dependencies 
+  in the shrinkwrap archive of the web container.
+  Sometimes to spot errors like that is easy as Test result is successful(!), but in reality no test has run. 
+  `07:29:07,646 INFO  [org.jboss.weld.Bootstrap] (Weld Thread Pool -- 2) WELD-000119: Not generating any bean definitions from dev.luke10x.easylogin.registration.RegistrationControllerTest because of underlying class loading error: Type com.gargoylesoftware.htmlunit.WebClient from [Module "deployment.44fde11d-8f41-4669-8169-32e44babfa56.war" from Service Module Loader] not found.  If this is unexpected, enable DEBUG logging to see the full error.`
+  I think that in this case it should treat the failure as critical and fail the test.
+- Found Mockito configuration that works. Unfortunately that is an old version. With this version now
+  MockitoAnnotations.openMocks does not work...
+
 
 ### Resources
 

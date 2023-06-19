@@ -17,6 +17,7 @@ import org.jboss.shrinkwrap.api.Filters;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.importer.ExplodedImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -42,25 +43,43 @@ import static org.mockito.Mockito.verify;
 public class RegistrationControllerTest {
     @Default
     public static class RegistrationServiceAlternative implements RegistrationService {
+
+        public RegistrationService getMock() {
+            return mock;
+        }
+
+        private static RegistrationService mock = Mockito.mock(RegistrationServiceAlternative.class);
+
         @Override
-        public void registerNewHandle(Handle handle) throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException {}
+        public void registerNewHandle(Handle handle) throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException {
+            mock.registerNewHandle(handle);
+        }
     }
+
     @Inject RegistrationServiceAlternative registrationService;
 
     @Default
     public static class UserServiceAlternative implements UserService {
+
+        public UserService getMock() {
+            return mock;
+        }
+
+        private static final UserService mock = Mockito.mock(UserServiceAlternative.class);
+
         @Override
         public List<User> getAllUsers() {
-            return null;
+            return mock.getAllUsers();
         }
     }
+
     @Inject
     UserServiceAlternative userService;
 
     @BeforeEach
     public void reassignAlternativesToMocks() {
-        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
-        userService = Mockito.mock(UserServiceAlternative.class);
+//        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
+//        userService = Mockito.mock(UserServiceAlternative.class);
     }
 
     private static final String WEBAPP_SRC = "src/main/webapp";
@@ -84,7 +103,8 @@ public class RegistrationControllerTest {
                 .addAsLibraries(files)
                 // Enable CDI
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-//                .addAsResource("arquillian.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: jdk.unsupported\n" /* required by Mockito */), "MANIFEST.MF")
+
 
                 .merge(ShrinkWrap.create(GenericArchive.class).as(ExplodedImporter.class)
                                 .importDirectory(WEBAPP_SRC).as(GenericArchive.class),
@@ -104,13 +124,19 @@ public class RegistrationControllerTest {
     @BeforeEach
     public void setUp() {
         client = new WebClient();
-        client.getOptions()
-                .setThrowExceptionOnScriptError(false);
-        client.getOptions()
-                .setThrowExceptionOnFailingStatusCode(false);
-        client.getOptions()
-                .setRedirectEnabled(true);
+        var opts = client.getOptions();
+        opts.setThrowExceptionOnScriptError(false);
+        opts.setThrowExceptionOnFailingStatusCode(false);
+        opts.setCssEnabled(false);
+        opts.setRedirectEnabled(true);
+        opts.setJavaScriptEnabled(false);
         
+    }
+
+    @BeforeEach
+    public void resetMocks() {
+        Mockito.reset(registrationService.getMock());
+        Mockito.reset(userService.getMock());
     }
 
     @AfterEach
@@ -132,25 +158,18 @@ public class RegistrationControllerTest {
 
     @Test
     public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
-        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
-
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
 
         form.getInputByName("handle").type("");
         HtmlPage resultPage = form.getButtonByName("submit-registration").click();
 
-        // Browser is likely not even reaching backend validation
-        assertEquals(200, resultPage.getWebResponse().getStatusCode());
-
-        verify(registrationService, times(0)).registerNewHandle(any());
-
-
+        assertEquals(400, resultPage.getWebResponse().getStatusCode());
+        verify(registrationService.getMock(), times(0)).registerNewHandle(any());
     }
 
     @Test
     public void redirectsForward() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
-        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
 
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
@@ -164,7 +183,6 @@ public class RegistrationControllerTest {
                 new URL(baseUrl, "mvc/onboarding").getPath(),
                 resultPage.getWebResponse().getWebRequest().getUrl().getPath());
 
-        verify(registrationService, times(1)).registerNewHandle(any());
-
+        verify(registrationService.getMock(), times(1)).registerNewHandle(any());
     }
 }
