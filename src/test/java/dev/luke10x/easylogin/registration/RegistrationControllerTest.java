@@ -5,9 +5,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import dev.luke10x.easylogin.UserApplication;
 import dev.luke10x.easylogin.common.FlashContainer;
-import dev.luke10x.easylogin.community.User;
 import dev.luke10x.easylogin.community.UserController;
-import dev.luke10x.easylogin.community.UserService;
 import dev.luke10x.easylogin.topt.TotpGenerator;
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -28,11 +26,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
-import javax.enterprise.inject.Default;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,46 +37,12 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
-    @Default
-    public static class RegistrationServiceAlternative implements RegistrationService {
 
-        public RegistrationService getMock() {
-            return mock;
-        }
-
-        private static RegistrationService mock = Mockito.mock(RegistrationServiceAlternative.class);
-
-        @Override
-        public void registerNewHandle(Handle handle) throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException {
-            mock.registerNewHandle(handle);
-        }
-    }
-
-    @Inject RegistrationServiceAlternative registrationService;
-
-    @Default
-    public static class UserServiceAlternative implements UserService {
-
-        public UserService getMock() {
-            return mock;
-        }
-
-        private static final UserService mock = Mockito.mock(UserServiceAlternative.class);
-
-        @Override
-        public List<User> getAllUsers() {
-            return mock.getAllUsers();
-        }
-    }
+    @Inject
+    RegistrationServiceAlternative registrationService;
 
     @Inject
     UserServiceAlternative userService;
-
-    @BeforeEach
-    public void reassignAlternativesToMocks() {
-//        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
-//        userService = Mockito.mock(UserServiceAlternative.class);
-    }
 
     private static final String WEBAPP_SRC = "src/main/webapp";
 
@@ -130,8 +92,8 @@ public class RegistrationControllerTest {
         opts.setCssEnabled(false);
         opts.setRedirectEnabled(true);
         opts.setJavaScriptEnabled(false);
-        
     }
+
 
     @BeforeEach
     public void resetMocks() {
