@@ -77,6 +77,17 @@ publishing {
             groupId 'dev.luke10x'
             artifactId 'shrinkwrap-for-arquillian'
             version '1.0.0'
+
+            pom.withXml { xml ->
+                def dependenciesNode = xml.asNode().dependencies[0]
+                configurations.testRuntimeOnly.allDependencies.each { dependency ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+                    dependencyNode.appendNode('scope', 'test')
+                }
+            }
         }
     }
 }

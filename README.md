@@ -35,6 +35,7 @@ yet, TOTP is primarily designed for a second factor authentication,
 and using it as one and only way to authenticate,
 may not be the best idea from security point of view.
 
+
 ### Development 
 
 Start wildfly with local DB:
@@ -57,9 +58,19 @@ Development web UI accessible:
 - [WildFly dashboard](http://0.0.0.0:19990/)
 - [Easy Login dashboard](http://0.0.0.0:19980/)
 
-# IntelliJ
 
-To run tests using green triangle is better to configure Junit template in Run configurations.
+# IntelliJ settings
+
+To run tests using the green triangle is better to set a template for Junit run configurations,
+which has default VM options set to:
+
+    -ea -Djboss.home=build/wildfly-27.0.1/wildfly-27.0.1.Final
+
+To debug Arquillian tests from IntelliJ a Remote JVM Debug configuration need to be added with
+Debugger mode set to "Listening on remote JVM" port 15007.
+
+To debug Wildfly running in a Docker container a Remote JVM Debug configuration need to be added with
+Debugger mode set to "Attach to remote JVM" port 15005.
 
 
 ### Issues and Workarounds
@@ -72,6 +83,12 @@ but some are strange and not well known behaviours.
 - Must use `Response.accepted("redirect:onboarding").build()` syntax for redirects
   if @RedirectScope is used. Using long syntax of the Response builder with 2XX codes does not seem to follow
   Location header; and using 3XX code redirects but cannot access object ser to @RedirectScope before redirection.
+- If @Deployment(testable = false), then the during the test it stops on breakpoints set in main code using remote
+  debug configuration on the container (On breakpoints in test code is possible to break using local debug for junit 
+  run). But this mode makes it impossible to use Mockito mocks.
+- If @Deployment(testable = true) it is possible to use Mockito mocks as the tests run in the container using this
+  mode, but for some reason it does not seem to stop on breakpoints while debugging.
+- As kind of separate issue, the tests cannot start if IDE debugger is not listening.
 
 ### Resources
 
@@ -81,4 +98,3 @@ but some are strange and not well known behaviours.
 - [Another example by Hantsy](https://github.com/hantsy/jakartaee-mvc-sample/blob/master/pom.xml)
 - [Getting started with JSF](https://www.mastertheboss.com/java-ee/jsf/getting-started-with-jsf-4-0-on-wildfly-27/)
 - [About Jakarta Faces without MVC](https://www.mastertheboss.com/java-ee/jsf/getting-started-with-jsf-4-0-on-wildfly-27/)
-- 

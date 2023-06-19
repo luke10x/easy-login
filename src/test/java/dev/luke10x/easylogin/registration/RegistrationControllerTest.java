@@ -34,6 +34,9 @@ import java.net.URL;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
@@ -62,13 +65,14 @@ public class RegistrationControllerTest {
 
     private static final String WEBAPP_SRC = "src/main/webapp";
 
-    @Deployment(testable = false)
+    @Deployment(testable = true)
     public static WebArchive createDeployment() {
         File[] files = Maven.resolver().loadPomFromFile("build/publications/sample/pom-default.xml")
                 .importDependencies(ScopeType.COMPILE, ScopeType.RUNTIME, ScopeType.TEST)
                 .resolve()
                 .withTransitivity()
                 .asFile();
+
         WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addPackage(RegistrationController.class.getPackage())
                 .addPackage(UserController.class.getPackage())
@@ -80,6 +84,8 @@ public class RegistrationControllerTest {
                 .addAsLibraries(files)
                 // Enable CDI
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+//                .addAsResource("arquillian.xml")
+
                 .merge(ShrinkWrap.create(GenericArchive.class).as(ExplodedImporter.class)
                                 .importDirectory(WEBAPP_SRC).as(GenericArchive.class),
                         "/", Filters.include(".*\\.(xhtml|css|xml)$")
@@ -104,6 +110,7 @@ public class RegistrationControllerTest {
                 .setThrowExceptionOnFailingStatusCode(false);
         client.getOptions()
                 .setRedirectEnabled(true);
+        
     }
 
     @AfterEach
@@ -115,10 +122,6 @@ public class RegistrationControllerTest {
 
     @Test
     public void testTodosAPI() throws Exception {
-
-        RegistrationService registrationService = Mockito.mock(RegistrationService.class);
-
-        final String url = new URL(baseUrl, "mvc/register").toExternalForm();
         Page page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
 
         assertEquals(200, page.getWebResponse().getStatusCode());
@@ -129,7 +132,7 @@ public class RegistrationControllerTest {
 
     @Test
     public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
-        RegistrationService registrationService = Mockito.mock(RegistrationService.class);
+        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
 
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
@@ -139,13 +142,15 @@ public class RegistrationControllerTest {
 
         // Browser is likely not even reaching backend validation
         assertEquals(200, resultPage.getWebResponse().getStatusCode());
-        final String body = resultPage.getWebResponse().getContentAsString();
-        System.out.println("Body: " + body);
+
+        verify(registrationService, times(0)).registerNewHandle(any());
+
+
     }
 
     @Test
-    public void dsfsdfsd() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
-        RegistrationService registrationService = Mockito.mock(RegistrationService.class);
+    public void redirectsForward() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
+        registrationService = Mockito.mock(RegistrationServiceAlternative.class);
 
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
@@ -159,7 +164,7 @@ public class RegistrationControllerTest {
                 new URL(baseUrl, "mvc/onboarding").getPath(),
                 resultPage.getWebResponse().getWebRequest().getUrl().getPath());
 
-        final String body = resultPage.getWebResponse().getContentAsString();
-        System.out.println("Body: " + body);
+        verify(registrationService, times(1)).registerNewHandle(any());
+
     }
 }
