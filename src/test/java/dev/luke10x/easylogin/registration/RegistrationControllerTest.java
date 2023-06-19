@@ -6,8 +6,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import dev.luke10x.easylogin.UserApplication;
 import dev.luke10x.easylogin.common.FlashContainer;
 import dev.luke10x.easylogin.community.UserController;
+import dev.luke10x.easylogin.community.UserService;
 import dev.luke10x.easylogin.topt.TotpGenerator;
 import jakarta.inject.Inject;
+import lombok.Delegate;
+import lombok.Getter;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -15,7 +18,6 @@ import org.jboss.shrinkwrap.api.Filters;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.importer.ExplodedImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -25,18 +27,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import testutils.MockRegistry;
 
+import javax.enterprise.inject.Default;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
+
+    @Default public static class RegistrationServiceAlternative implements RegistrationService {
+        @Getter
+        @Delegate(types = { RegistrationService.class })
+        private final RegistrationService mock = (RegistrationServiceAlternative) MockRegistry.get(
+                RegistrationServiceAlternative.class);
+    }
+
+    @Default public static class UserServiceAlternative implements UserService {
+        @Getter
+        @Delegate(types = UserService.class)
+        private final UserService mock = (UserServiceAlternative) MockRegistry.get(UserServiceAlternative.class);
+    }
 
     @Inject
     RegistrationServiceAlternative registrationService;
@@ -59,19 +75,18 @@ public class RegistrationControllerTest {
                 .addPackage(UserController.class.getPackage())
                 .addPackage(FlashContainer.class.getPackage())
                 .addPackage(TotpGenerator.class.getPackage())
+                .addPackage(MockRegistry.class.getPackage())
                 .addClass(UserApplication.class)
                 .addClass(RegistrationServiceAlternative.class)
                 .addClass(UserServiceAlternative.class)
                 .addAsLibraries(files)
-                // Enable CDI
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: jdk.unsupported\n" /* required by Mockito */), "MANIFEST.MF")
-
-
-                .merge(ShrinkWrap.create(GenericArchive.class).as(ExplodedImporter.class)
-                                .importDirectory(WEBAPP_SRC).as(GenericArchive.class),
-                        "/", Filters.include(".*\\.(xhtml|css|xml)$")
-                );
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        war.merge(
+                ShrinkWrap.create(GenericArchive.class)
+                        .as(ExplodedImporter.class).importDirectory(WEBAPP_SRC).as(GenericArchive.class),
+                "/",
+                Filters.include(".*\\.(xhtml|css|xml)$")
+        );
         war.getContent().entrySet().stream().forEach(entry -> {
             System.out.println("#### " +  entry.getValue());
         });
@@ -121,8 +136,8 @@ public class RegistrationControllerTest {
     public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
-
         form.getInputByName("handle").type("");
+
         HtmlPage resultPage = form.getButtonByName("submit-registration").click();
 
         assertEquals(400, resultPage.getWebResponse().getStatusCode());
@@ -134,8 +149,8 @@ public class RegistrationControllerTest {
 
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
-
         form.getInputByName("handle").type("myname");
+
         Page resultPage = form.getButtonByName("submit-registration").click();
 
         // It is 404 because it redirected out of deployed ShrinkWrap web archive

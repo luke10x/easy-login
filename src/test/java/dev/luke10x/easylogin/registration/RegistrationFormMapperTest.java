@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@DisplayName("Registration form mapper")
+@DisplayName("Registration form mapper test")
 class RegistrationFormMapperTest {
 
     @InjectMocks
