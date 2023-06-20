@@ -2,6 +2,8 @@ package dev.luke10x.easylogin.registration;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import dev.luke10x.easylogin.UserApplication;
 import dev.luke10x.easylogin.community.UserService;
@@ -14,6 +16,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -26,9 +29,11 @@ import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Registration controller")
 @ExtendWith(ArquillianExtension.class)
 public class RegistrationControllerTest {
 
@@ -92,30 +97,39 @@ public class RegistrationControllerTest {
         }
     }
 
+    final static private String ERROR_PLACEHOLDER = "span[data-testid='registration-error']";
     @Test
-    public void testTodosAPI() throws Exception {
-        Page page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
+    @DisplayName("Shows registration form")
+    public void showsRegistrationForm() throws Exception {
+        HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
 
         assertEquals(200, page.getWebResponse().getStatusCode());
 
-        final String body = page.getWebResponse().getContentAsString();
-        System.out.println("Body: " + body);
+        final DomNode error = page.querySelector(ERROR_PLACEHOLDER);
+
+        assertNull(error);
+        assertEquals(200, page.getWebResponse().getStatusCode());
     }
 
     @Test
-    public void emptyHandleShowsErrorMessage()
+    @DisplayName("Submitting registration form with empty handle shows error")
+    public void submittingRegistrationFormWithEmptyHandleShowsError()
             throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
-        HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
-        var form = page.getForms().get(0);
+        final HtmlPage initialPage = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
+        var form = initialPage.getForms().get(0);
         form.getInputByName("handle").type("");
 
-        HtmlPage resultPage = form.getButtonByName("submit-registration").click();
+        final HtmlPage resultPage = form.getButtonByName("submit-registration").click();
 
+        final String error = resultPage.querySelector(ERROR_PLACEHOLDER).getVisibleText();
+
+        assertEquals("Name cannot be blank", error);
         assertEquals(400, resultPage.getWebResponse().getStatusCode());
         verify(registrationService.getMock(), times(0)).registerNewHandle(any());
     }
 
     @Test
+    @DisplayName("Submitting filled registration form redirects to onboarding")
     public void redirectsForward()
             throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
 
