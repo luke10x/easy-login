@@ -4,33 +4,24 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import dev.luke10x.easylogin.UserApplication;
-import dev.luke10x.easylogin.common.FlashContainer;
-import dev.luke10x.easylogin.community.UserController;
 import dev.luke10x.easylogin.community.UserService;
-import dev.luke10x.easylogin.topt.TotpGenerator;
 import jakarta.inject.Inject;
 import lombok.Delegate;
 import lombok.Getter;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Filters;
-import org.jboss.shrinkwrap.api.GenericArchive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.importer.ExplodedImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.ScopeType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import testutils.MockRegistry;
+import dev.luke10x.easylogin.testutils.HtmlUnitWebClientFactory;
+import dev.luke10x.easylogin.testutils.MockRegistry;
+import dev.luke10x.easylogin.testutils.WebArchiveFactory;
 
 import javax.enterprise.inject.Default;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -60,33 +51,18 @@ public class RegistrationControllerTest {
     @Inject
     UserServiceAlternative userService;
 
-    private static final String WEBAPP_SRC = "src/main/webapp";
-
-    @Deployment(testable = true)
+    @Deployment
     public static WebArchive createDeployment() {
-        File[] files = Maven.resolver().loadPomFromFile("build/publications/sample/pom-default.xml")
-                .importDependencies(ScopeType.COMPILE, ScopeType.RUNTIME, ScopeType.TEST)
-                .resolve()
-                .withTransitivity()
-                .asFile();
-
-        WebArchive war = ShrinkWrap.create(WebArchive.class)
-                .addPackage(RegistrationController.class.getPackage())
-                .addPackage(UserController.class.getPackage())
-                .addPackage(FlashContainer.class.getPackage())
-                .addPackage(TotpGenerator.class.getPackage())
-                .addPackage(MockRegistry.class.getPackage())
-                .addClass(UserApplication.class)
+        WebArchive war = WebArchiveFactory.createCommonWebArchive()
+                .addPackage(dev.luke10x.easylogin.registration.RegistrationController.class.getPackage())
+                .addPackage(dev.luke10x.easylogin.community   .UserController.class.getPackage())
+                .addPackage(dev.luke10x.easylogin.common      .FlashContainer.class.getPackage())
+                .addPackage(dev.luke10x.easylogin.topt        .TotpGenerator.class.getPackage())
+                .addPackage(dev.luke10x.easylogin.testutils   .MockRegistry.class.getPackage())
                 .addClass(RegistrationServiceAlternative.class)
                 .addClass(UserServiceAlternative.class)
-                .addAsLibraries(files)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        war.merge(
-                ShrinkWrap.create(GenericArchive.class)
-                        .as(ExplodedImporter.class).importDirectory(WEBAPP_SRC).as(GenericArchive.class),
-                "/",
-                Filters.include(".*\\.(xhtml|css|xml)$")
-        );
+                .addClass(UserApplication.class);
+
         war.getContent().entrySet().stream().forEach(entry -> {
             System.out.println("#### " +  entry.getValue());
         });
@@ -100,13 +76,7 @@ public class RegistrationControllerTest {
 
     @BeforeEach
     public void setUp() {
-        client = new WebClient();
-        var opts = client.getOptions();
-        opts.setThrowExceptionOnScriptError(false);
-        opts.setThrowExceptionOnFailingStatusCode(false);
-        opts.setCssEnabled(false);
-        opts.setRedirectEnabled(true);
-        opts.setJavaScriptEnabled(false);
+        client = HtmlUnitWebClientFactory.createCommonWebClient();
     }
 
     @BeforeEach
@@ -133,7 +103,8 @@ public class RegistrationControllerTest {
     }
 
     @Test
-    public void emptyHandleShowsErrorMessage() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
+    public void emptyHandleShowsErrorMessage()
+            throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
         form.getInputByName("handle").type("");
@@ -145,7 +116,8 @@ public class RegistrationControllerTest {
     }
 
     @Test
-    public void redirectsForward() throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
+    public void redirectsForward()
+            throws HandleAlreadyTakenException, HandleSizeException, HandleStorageException, IOException {
 
         HtmlPage page = client.getPage(new URL(baseUrl, "mvc/register").toExternalForm());
         var form = page.getForms().get(0);
@@ -159,6 +131,7 @@ public class RegistrationControllerTest {
                 new URL(baseUrl, "mvc/onboarding").getPath(),
                 resultPage.getWebResponse().getWebRequest().getUrl().getPath());
 
-        verify(registrationService.getMock(), times(1)).registerNewHandle(any());
+        verify(registrationService.getMock(), times(1))
+                .registerNewHandle(any());
     }
 }

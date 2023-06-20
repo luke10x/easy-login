@@ -1,4 +1,4 @@
-package testutils;
+package dev.luke10x.easylogin.testutils;
 
 import org.mockito.Mockito;
 

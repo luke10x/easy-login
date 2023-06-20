@@ -105,23 +105,19 @@ publishing {
 }
 
 task writeNewPom {
-    dependsOn 'generatePomFileForSamplePublication'
-    doLast {
-    }
+    dependsOn generatePomFileForSamplePublication
 }
 
 test {
-    useJUnitPlatform()
-
     dependsOn setupWildFly
     dependsOn writeNewPom
-    forkEvery = 1
+
+    useJUnitPlatform()
 
     systemProperty 'arquillian.launch', 'wildfly-managed-no-debug'
     systemProperty 'serverConfig', 'standalone-full.xml'
     systemProperty 'jboss.home', "${buildDir}/wildfly-27.0.1/wildfly-27.0.1.Final"
 
-    // Configure test logging options
     testLogging {
         events = ["passed", "failed", "skipped"]
         showStandardStreams = false
