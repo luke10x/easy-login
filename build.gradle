@@ -50,7 +50,6 @@ dependencies {
     testImplementation 'org.mockito:mockito-junit-jupiter:3.3.3'
 
     // Generic Arquillian
-//    implementation platform('org.jboss.arquillian:arquillian-bom:1.7.0.Final')
     testImplementation 'org.wildfly.arquillian:wildfly-arquillian-container-managed:5.0.0.Final'
     testImplementation 'org.jboss.arquillian.junit5:arquillian-junit5-container:1.7.0.Alpha14'
 
@@ -60,12 +59,12 @@ dependencies {
     // Drives MVC tests
     testImplementation 'net.sourceforge.htmlunit:htmlunit:2.70.0'
 
-    // Just Wildfly distribution, for Arquillian
+    // Just Wildfly distribution, for managed Arquillian
     wildFlyDistribution 'org.wildfly:wildfly-dist:27.0.1.Final@zip'
 }
 
 
-task setupWildFly(type: Copy) {
+task downloadWildFlyDist(type: Copy) {
     from configurations.wildFlyDistribution.resolvedConfiguration.files.collect { file ->
         zipTree(file)
     }
@@ -104,13 +103,14 @@ publishing {
     }
 }
 
-task writeNewPom {
+// Do not forget to run this each time dependencies are updated
+task exportTestDepsToPom {
     dependsOn generatePomFileForSamplePublication
 }
 
 test {
-    dependsOn setupWildFly
-    dependsOn writeNewPom
+    dependsOn downloadWildFlyDist
+    dependsOn exportTestDepsToPom
 
     useJUnitPlatform()
 
