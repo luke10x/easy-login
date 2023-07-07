@@ -1,0 +1,5 @@
+[
+  { "name": "Alice",   "desc": "Starts with lettter A" },
+  { "name": "Bob",     "desc": "Starts with lettter B" },
+  { "name": "Charlie", "desc": "Starts with lettter C" }
+]
