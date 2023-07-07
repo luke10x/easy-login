@@ -100,3 +100,5 @@ but some are strange and not well known behaviours.
 - [Another example by Hantsy](https://github.com/hantsy/jakartaee-mvc-sample/blob/master/pom.xml)
 - [Getting started with JSF](https://www.mastertheboss.com/java-ee/jsf/getting-started-with-jsf-4-0-on-wildfly-27/)
 - [About Jakarta Faces without MVC](https://www.mastertheboss.com/java-ee/jsf/getting-started-with-jsf-4-0-on-wildfly-27/)
+- [Vue JS from scratch](https://medium.com/@kasulejoseph/how-to-create-a-vue-js-application-from-scratch-with-webpack-and-babel-c1629d411127)
+

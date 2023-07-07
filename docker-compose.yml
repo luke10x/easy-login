@@ -32,3 +32,18 @@ services:
       POSTGRES_PASSWORD: easylogin_pass
       POSTGRES_USER: easylogin_user
       POSTGRES_DB: easylogin_db
+
+  webpack:
+    build:
+      context: ./webpack
+      dockerfile: Dockerfile
+    ports:
+      - 19970:19970
+    volumes:
+      - ./webpack:/vue-app
+    working_dir: /vue-app
+    entrypoint:  '/bin/bash -c'
+    command:
+      - |
+        tail -f /dev/null
+        npm run dev
